@@ -1,0 +1,10 @@
+[subway_timetable DB]
+
+ column name  | type              | function
+------------------------------------------------------------------------------------------
+ id           | Integer(not NULL) | Primary Key
+ line         | string(not NULL)  | 지하철 호선 이름 ex)'1호선', '2호선', '경의중앙선', ...
+ station      | string(not NULL)  | 역 이름 ex)안암역
+ direction    | string            | 상행인지 하행인지 / 상행 : 'U', 하행 : 'D'
+ hour         | Integer           | 열차가 오는 시각의 '시'
+ minuter      | Integer           | 열차가 오는 시각의 '분'
