@@ -18,11 +18,11 @@ app = Flask(__name__)
 
 
 import sqlite3
-cnx = sqlite3.connect('../../Desktop/빅데이터11조/db/Address.db')
+cnx = sqlite3.connect('db/Address.db')
 address = pd.read_sql_query("SELECT * FROM Address", cnx)
 
 
-conn = sqlite3.connect('../../Desktop/빅데이터11조/db/BusStation2.db')
+conn = sqlite3.connect('db/BusStation2.db')
 cur = conn.cursor()
 cur.execute("SELECT DISTINCT(busID) FROM BusStation2")
 low_bus = []
@@ -55,14 +55,17 @@ class Pedestrian:
         paramUrl = parse.urlencode(data)
         paramBytes = paramUrl.encode("utf-8")
 
-        self.req = request.Request(tmapURL, data=paramBytes, headers={'appKey': "b9e1fdd0-0495-4f88-8b28-3e1ae2e84b19", 'user-agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'})
+        self.req = request.Request(tmapURL, data=paramBytes, headers={'appKey': "b9e1fdd0-0495-4f88-8b28-3e1ae2e84b19",
+                                                                      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'})
+        request.get_method = lambda: 'GET'
         res = request.urlopen(self.req)
         self.result = res.read().decode("utf-8")
-
         self.xml = BeautifulSoup(self.result, "html.parser")
-        self.totaltime = int(self.xml.find("tmap:totaltime").text) // 60 + 1
-        self.totaldistance = int(self.xml.find("tmap:totaldistance").text)
-
+        try:
+            self.totaltime = int(self.xml.find("tmap:totaltime").text) // 60 + 1
+            self.totaldistance = int(self.xml.find("tmap:totaldistance").text)
+        except:
+            print(self.xml.find("message"))
 
 
 class Subway:
@@ -358,30 +361,46 @@ eY = 37.570594
 wkDay = 6
 departTm = "08:00"
 
-g_pathList = []
+# global g_pathList
 
 @app.route('/getpath')
 def getpath():
     # 이용자가 입력하는 출발, 목적지 좌표 및 시간
-    pathList = eachroute(fullroute(stX, stY, eX, eY, wkDay, departTm))  # subPath + 메타데이터를 dict으로 담고있는 경로들의 list
+    full = fullroute(126.9027279,37.5349277,126.922725,37.547914, wkDay, departTm)
+    print(len(full[0]))
+    if len(full[0]) > 7:
+        full[0] = full[0][:7]
+    pathList = eachroute(full) # subPath + 메타데이터를 dict으로 담고있는 경로들의 list
     # 각 경로마다의 subPath를 객체로 저장 -> Pedestrian() , Subway(), Bus()
     # 웹 구현 시 각 subPath의 객체타입에 따라 보여지는 형식이 다름
-    g_pathList = pathList
+    # g_pathList = pathList
 
     return render_template("fullpath.html", pathList=pathList)  # 모든 경로를 대중교통 타입에 따라 구분하여 화면에 보여주는 html
 
-
-
+full = fullroute(126.9027279,37.5349277,126.922725,37.547914, wkDay, departTm)
+if len(full[0]) > 7:
+    full[0] = full[0][:7]
+g_pathList = eachroute(full)
 
 @app.route('/subpath<onepath>', methods=["GET"])
 def subpath(onepath):  # 하나의 경로를 구성하는 subpath들을 보여줌
-    print(type(onepath))
     path = g_pathList[int(onepath)]
+    print(path)
+
     return render_template("subpath.html", path=path)  # subpath들의 대중교통 타입에 따라 다른 형식으로 화면에 보여주는 html
+
 
 @app.route('/temp')
 def temp():
-    return render_template("subpath.html")
+    path = g_pathList[1]
+    subpaths = []
+    for p in path:
+        # print(type(path[p]))
+        # print(path[p])
+        if type(p)==int:
+            subpaths.append(path[p])
+    print(subpaths)
+    return render_template("subpath.html", path=subpaths)
 
 @app.route('/sub')
 def route_p():
