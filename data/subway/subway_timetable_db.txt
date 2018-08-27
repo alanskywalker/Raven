@@ -10,3 +10,4 @@
  last_station | string            | 종점에 해당하는 역 이름
  hour         | Integer           | 열차가 오는 시각의 '시'
  minuter      | Integer           | 열차가 오는 시각의 '분'
+ next_station | string            | 해당 열차의 다음역
