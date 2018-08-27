@@ -1,0 +1,299 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>전체 경로 조회</title>
+
+    <!-- Css Files -->
+    <link href="{{url_for('static', filename='css/bootstrap.css')}}" rel="stylesheet">
+    <link href="{{url_for('static', filename='css/font-awesome.css')}}" rel="stylesheet">
+    <link href="{{url_for('static', filename='css/flaticon.css')}}" rel="stylesheet">
+    <link href="{{url_for('static', filename='style.css')}}" rel="stylesheet">
+    <link href="{{url_for('static', filename='css/color.css')}}" rel="stylesheet">
+    <link href="{{url_for('static', filename='css/slick-slider.css')}}" rel="stylesheet">
+    <link href="{{url_for('static', filename='css/prettyphoto.css')}}" rel="stylesheet">
+    <link href="{{url_for('static', filename='css/responsive.css')}}" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+	
+    <!--// Main Wrapper \\-->
+    <div class="wm-main-wrapper">
+        
+        <!--// Header \\-->
+		<header id="wm-header" class="wm-header-one wm-withbg">
+			<span class="wm-transparent-layer"></span>
+			<div class="container">
+				<div class="row">
+					<!--// Main Header \\-->
+					<div class="wm-mainheader">
+						<div class="row">
+							<div class="col-md-3"><a href="index.html" class="wm-logo"><img src="{{url_for('static', filename='images/logo-2.png')}}" alt=""></a></div>
+							
+						</div>
+					</div>
+					<!--// Main Header \\-->
+
+				</div>
+			</div>
+		</header>
+		<!--// Header \\-->
+
+		<!--// Sub Header \\-->
+		<div class="wm-mini-header">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12">
+						<ul class="wm-breadcrumb">
+							<li><a href="#">경로 검색</a></li>
+							<li>전체 경로 조회</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!--// Sub Header \\-->
+
+		<!--// Main Content \\-->
+		<div class="wm-main-content">
+
+			<!--// Main Section \\-->
+			<div class="wm-main-section">
+				<div class="container">
+					<div class="row">
+						<div class="row">
+
+							<!--// Fancy Title \\-->
+							<div class="col-md-12">
+								<div class="wm-fancy-title2">
+									<h2>전체 경로 조회</h2>
+									<p>다른 곳으로 가고 싶으신가요? <a href="contact-us.html">경로 검색</a></p>
+								</div>
+							</div>
+							<!--// Fancy Title \\-->
+
+
+<div class="ec-tabs-style ec-tabs-element ec-change-color">
+	<ul class="tabs-nav">
+		<li role="presentation" class="active"><a href="#recommend" aria-controls="recommend" data-toggle="tab">추천</a></li>
+		<li role="presentation"><a href="#subway" aria-controls="subway" data-toggle="tab">지하철</a></li>
+		<li role="presentation"><a href="#bus" aria-controls="bus" data-toggle="tab">버스</a></li>
+		<li role="presentation"><a href="#both" aria-controls="both" data-toggle="tab">지하철+버스</a></li>
+		<li role="presentation"><a href="#taxi" aria-controls="taxi" data-toggle="tab">택시</a></li>
+	</ul>
+	<div class="tab-content">
+
+		<div role="tabpanel" class="tab-pane active" id="recommend">
+
+<div class="wm-priceplans-style-two">
+	<ul class="row">
+        {% for path in pathList %}
+            {% if path['score'] > 25 %}
+                <li >
+                    <div class="wm-priceplans-wrap">
+
+                        <div class="wm-price-storage">
+                            <!--<div class="wm-storage"><span>이동편의지수</span></div>-->
+                            <div class="clearfix"></div>
+                            <div class="wm-price-sec">
+                                {% if path['score']>25 %}편함
+                                {% elif path['score']>15 %}보통
+                                {% else %}불편{% endif %}
+                                <span><br/>{{ path['score'] }}</span></div>
+                        </div>
+
+                            <h3>{{path['desc']}}</h3>
+                            <h5>총 소요시간 {{ path['totaltime'] }}분, 총 환승횟수 {{ path['trans'] }}회, 총 도보시간 {{path['totalwalk']}}분<h5>
+
+                        <div class=".wm-priceplane-btn"><a href="{{ url_for('subpath', onepath = path) }}" class="wm-btn-style1 wm-bgcolor">상세보기</a></div>
+
+                    </div>
+                </li>
+            {% endif %}
+        {% endfor %}
+	</ul>
+</div>
+
+		</div>
+
+	<div role="tabpanel" class="tab-pane" id="subway">
+
+<div class="wm-priceplans-style-two">
+	<ul class="row">
+        {% for path in pathList %}
+            {% if path['pathType'] ==1 %}
+                <li >
+                    <div class="wm-priceplans-wrap">
+
+                        <div class="wm-price-storage">
+                            <!--<div class="wm-storage"><span>이동편의지수</span></div>-->
+                            <div class="clearfix"></div>
+                            <div class="wm-price-sec">
+                                {% if path['score']>25 %}편함
+                                {% elif path['score']>15 %}보통
+                                {% else %}불편{% endif %}
+                                <span><br/>{{ path['score'] }}</span></div>
+                        </div>
+
+                            <h3>{{path['desc']}}</h3>
+                            <h5>총 소요시간 {{ path['totaltime'] }}분, 총 환승횟수 {{ path['trans'] }}회, 총 도보시간 {{path['totalwalk']}}분<h5>
+
+                        <div class=".wm-priceplane-btn"><a href="{{ url_for('subpath', onepath = path) }}" class="wm-btn-style1 wm-bgcolor">상세보기</a></div>
+
+                    </div>
+                </li>
+            {% endif %}
+        {% endfor %}
+	</ul>
+</div>
+		</div>
+
+
+
+
+<div role="tabpanel" class="tab-pane" id="bus">
+<div class="wm-priceplans-style-two">
+	<ul class="row">
+        {% for path in pathList %}
+            {% if path['pathType'] ==2 %}
+                <li >
+                    <div class="wm-priceplans-wrap">
+
+                        <div class="wm-price-storage">
+                            <!--<div class="wm-storage"><span>이동편의지수</span></div>-->
+                            <div class="clearfix"></div>
+                            <div class="wm-price-sec">
+                                {% if path['score']>25 %}편함
+                                {% elif path['score']>15 %}보통
+                                {% else %}불편{% endif %}
+                                <span><br/>{{ path['score'] }}</span></div>
+                        </div>
+
+                            <h3>{{path['desc']}}</h3>
+                            <h5>총 소요시간 {{ path['totaltime'] }}분, 총 환승횟수 {{ path['trans'] }}회, 총 도보시간 {{path['totalwalk']}}분<h5>
+
+                        <div class=".wm-priceplane-btn"><a href="{{ url_for('subpath', onepath = path) }}" class="wm-btn-style1 wm-bgcolor">상세보기</a></div>
+
+                    </div>
+                </li>
+            {% endif %}
+        {% endfor %}
+	</ul>
+</div>
+
+
+	</div>
+
+
+    <div role="tabpanel" class="tab-pane" id="both">
+
+<div class="wm-priceplans-style-two">
+	<ul class="row">
+        {% for path in pathList %}
+            {% if path['pathType'] ==3 %}
+                <li >
+                    <div class="wm-priceplans-wrap">
+
+                        <div class="wm-price-storage">
+                            <!--<div class="wm-storage"><span>이동편의지수</span></div>-->
+                            <div class="clearfix"></div>
+                            <div class="wm-price-sec">
+                                {% if path['score']>25 %}편함
+                                {% elif path['score']>15 %}보통
+                                {% else %}불편{% endif %}
+                                <span><br/>{{ path['score'] }}</span></div>
+                        </div>
+
+                            <h3>{{ loop.index }}{{path['desc']}}</h3>
+                            <h5>총 소요시간 {{ path['totaltime'] }}분, 총 환승횟수 {{ path['trans'] }}회, 총 도보시간 {{path['totalwalk']}}분<h5>
+
+                        <div class=".wm-priceplane-btn"><a href="{{ url_for('subpath', onepath = loop.index) }}" class="wm-btn-style1 wm-bgcolor">상세보기</a></div>
+
+                    </div>
+                </li>
+            {% endif %}
+        {% endfor %}
+	</ul>
+</div>
+
+
+	</div>
+
+
+
+<div role="tabpanel" class="tab-pane" id="taxi">
+
+<div class="wm-priceplans-style-two">
+	<ul class="row">
+            <li >
+                <div class="wm-priceplans-wrap">
+
+                    <div class="wm-price-storage">
+                        <!--<div class="wm-storage"><span>이동편의지수</span></div>-->
+                        <div class="clearfix"></div>
+                        <div class="wm-price-sec">편함<span><br/>10</span></div>
+                    </div>
+
+                        <h3>예상대기시간 &nbsp | </h3>
+                        <h5>20분<h5>
+
+
+                </div>
+
+
+            </li>
+	</ul>
+</div>
+
+
+	</div>
+
+
+        
+
+
+
+		</div>
+	</div>
+</div>
+
+
+        
+        
+
+
+						</div>
+					</div>
+				</div>
+			</div>
+			<!--// Main Section \\-->
+
+		</div>
+		<!--// Main Content \\-->
+
+    </div>
+    <!--// Main Wrapper \\-->
+
+	
+
+	<!-- jQuery (necessary for JavaScript plugins) -->
+	<script type="text/javascript" src="{{ url_for('static',filename='script/jquery.js')}}"></script>
+	<script src="{{ url_for('static',filename='script/data.json')}}"></script>
+	<script type="text/javascript" src="{{ url_for('static',filename='script/modernizr.js')}}"></script>
+    <script type="text/javascript" src="{{ url_for('static',filename='script/bootstrap.min.js')}}"></script>
+    <script type="text/javascript" src="{{ url_for('static',filename='script/jquery.prettyphoto.js')}}"></script>
+    <script type="text/javascript" src="{{ url_for('static',filename='script/jquery.countdown.min.js')}}"></script>
+    <script type="text/javascript" src="{{ url_for('static',filename='script/fitvideo.js')}}"></script>
+    <script type="text/javascript" src="{{ url_for('static',filename='script/slick.slider.min.js')}}"></script>
+    <script type="text/javascript" src="{{ url_for('static',filename='script/functions.js')}}"></script>
+  </body>
+</html>

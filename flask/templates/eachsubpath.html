@@ -1,0 +1,145 @@
+
+	<script src="https://code.jquery.com/jquery-1.12.4.min.js" ></script >
+        <script src="https://api2.sktelecom.com/tmap/js?version=1&format=javascript&appKey=1f55bf21-31eb-4ec4-a738-2011ccbb34f0"></script>
+
+        <script type="text/javascript">
+            function StringToXMLDom(string){
+                var xmlDoc=null;
+                if (window.DOMParser)
+                {
+                    parser=new DOMParser();
+                    xmlDoc=parser.parseFromString(string,"text/xml");
+                }
+                else // Internet Explorer
+                {
+                    xmlDoc=new ActiveXObject("Microsoft.XMLDOM");
+                    xmlDoc.async="false";
+                    xmlDoc.loadXML(string);
+                }
+                return xmlDoc;
+            }
+
+			function initTmap(stX, stY, eX, eY){
+				var map = new Tmap.Map({
+					div:'map_div',
+					width : "600px",
+					height : "400px",
+				});
+				map.setCenter(new Tmap.LonLat(String((stX+eX)/2), String((stY+eY)/2)).transform("EPSG:4326", "EPSG:3857"), 15);
+				var routeLayer = new Tmap.Layer.Vector("route");
+				map.addLayer(routeLayer);
+
+
+
+                // 2. 시작, 도착 심볼찍기
+                // 시작
+                var markerStartLayer = new Tmap.Layer.Markers("start");
+                map.addLayer(markerStartLayer);
+
+                var size = new Tmap.Size(24, 38);
+                var offset = new Tmap.Pixel(-(size.w / 2), -size.h);
+                var icon = new Tmap.IconHtml("<img src='http://tmapapis.sktelecom.com/upload/tmap/marker/pin_r_m_s.png' />", size, offset);
+                var marker_s = new Tmap.Marker(new Tmap.LonLat(String(stX), String(stY)).transform("EPSG:4326", "EPSG:3857"), icon);
+                markerStartLayer.addMarker(marker_s);
+
+                // 도착
+                var markerEndLayer = new Tmap.Layer.Markers("end");
+                map.addLayer(markerEndLayer);
+
+                var size = new Tmap.Size(24, 38);
+                var offset = new Tmap.Pixel(-(size.w / 2), -size.h);
+                var icon = new Tmap.IconHtml("<img src='http://tmapapis.sktelecom.com/upload/tmap/marker/pin_r_m_e.png' />", size, offset);
+                var marker_e = new Tmap.Marker(new Tmap.LonLat(String(eX), String(eY)).transform("EPSG:4326", "EPSG:3857"), icon);
+                markerEndLayer.addMarker(marker_e);
+
+
+
+                // 5. 경로 탐색  결과 Line 그리기
+                //경로 탐색  결과 POINT 찍기
+                /* -------------- Geometry.Point -------------- */
+                var pointLayer = new Tmap.Layer.Vector("point");
+                var xmlString = '{{ p.result|safe}}'
+                var prtcl = StringToXMLDom(xmlString);
+
+                   xmlDoc = $.parseXML( xmlString),
+                   $xml = $( xmlDoc ),
+                   $intRate = $xml.find("Document");
+
+                var tDistance = "총 거리 : "+($intRate[0].getElementsByTagName("tmap:totalDistance")[0].childNodes[0].nodeValue/1000).toFixed(1)+"km,";
+                var tTime = " 총 시간 : "+($intRate[0].getElementsByTagName("tmap:totalTime")[0].childNodes[0].nodeValue/60).toFixed(0)+"분";
+
+                $("#result").text(tDistance+tTime);
+
+                $intRate = $xml.find("Placemark");
+                   var style_red = {
+                           fillColor:"#FF0000",
+                           fillOpacity:0.2,
+                           strokeColor: "#FF0000",
+                           strokeWidth: 3,
+                           strokeDashstyle: "solid",
+                           pointRadius: 2,
+                           title: "this is a red line"
+                      };
+
+                    var route_text = ""
+                   $intRate.each(function(index, element) {
+                    var nodeType = element.getElementsByTagName("tmap:nodeType")[0].childNodes[0].nodeValue;
+
+                    if(nodeType == "POINT"){
+                        var pointIndex =  (element.getElementsByTagName("tmap:pointIndex")[0].childNodes[0].nodeValue*1)+1;
+                        var desc =  element.getElementsByTagName("description")[0].childNodes[0].nodeValue;
+                        //document.write(pointIndex,desc)
+                        route_text = route_text + pointIndex + ") " + desc +'<br/>';
+
+                       // var facilityType =  element.getElementsByTagName("tmap:facilityType")[0].childNodes[0].nodeValue;
+                       // if(facilityType == 17){
+                       //     stair = true
+                       // }
+
+                        var point = element.getElementsByTagName("coordinates")[0].childNodes[0].nodeValue.split(',');
+                        var geoPoint =new Tmap.Geometry.Point(point[0],point[1]);
+                        var pointFeature = new Tmap.Feature.Vector(geoPoint, null, style_red);
+                        pointLayer.addFeatures([pointFeature]);
+                    }
+                   });
+
+
+                map.addLayer(pointLayer);
+                /* -------------- Geometry.Point -------------- */
+                //경로 탐색  결과 Line 그리기
+                routeLayer.style ={
+                        fillColor:"#FF0000",
+                        fillOpacity:0.2,
+                        strokeColor: "#FF0000",
+                        strokeWidth: 3,
+                        strokeDashstyle: "solid",
+                        pointRadius: 2,
+                        title: "this is a red line"
+                }
+                var kmlForm = new Tmap.Format.KML().read(prtcl);
+                routeLayer.addFeatures(kmlForm);
+
+
+
+                // 6. 경로탐색 결과 반경만큼 지도 레벨 조정
+                map.zoomToExtent(routeLayer.getDataExtent());
+
+                //document.write(route_text);
+                $("#route").html(route_text);
+}
+
+
+		</script>
+
+    {%- for i in pathList %}
+            <p id="route"></p>
+            <br/>
+            <p id="result"></p>
+            <div id="map_div">
+            </div>
+            <script type="text/javascript">
+                initTmap({{ i[0]}}, {{ i[1]}}, {{ i[2]}},{{ i[3]}});
+            </script>
+    {% endfor -%}
+    </body>
+</html>
