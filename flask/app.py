@@ -142,7 +142,7 @@ class Pedestrian:
         paramUrl = parse.urlencode(data)
         paramBytes = paramUrl.encode("utf-8")
 
-        self.req = request.Request(tmapURL, data=paramBytes, headers={'appKey': "7c99ebb1-938e-4f91-a2d0-0b1db917839d",
+        self.req = request.Request(tmapURL, data=paramBytes, headers={'appKey': "1f55bf21-31eb-4ec4-a738-2011ccbb34f0",
                                                                       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'})
         request.get_method = lambda: 'GET'
         res = request.urlopen(self.req)
@@ -350,7 +350,7 @@ def eachroute(better_path, si, bun):
         splitpath = []
 
         for path in better_path:
-            onepath = {'totaltime': 0, 'score': 30, 'pathType': 0, 'trans': 0, 'desc': "", 'totalwalk': 0}
+            onepath = {'totaltime': 0, 'score': 5, 'pathType': 0, 'trans': 0, 'desc': "", 'totalwalk': 0}
 
             subPath = path['subPath']
 
@@ -507,7 +507,7 @@ def eachroute(better_path, si, bun):
                             onepath['totaltime'] += onepath[idx].totaltime
                             onepath['totalwalk'] += onepath[idx].totaltime
 
-                        onepath['score'] -= 5  # 환승시 편의 지수 하락
+                        onepath['score'] -= 1  # 환승시 편의 지수 하락
                         onepath['trans'] += 1
 
             splitpath.append(onepath)
@@ -568,68 +568,79 @@ departTm = "08:00"
 g_pathList=[]
 
 
+taxi_wait = 0
 
-
-@app.route('/fullpath', methods=['POST'])
+@app.route('/fullpath', methods=['POST', 'GET'])
 def full():   #출발, 목적지 좌표를 입력받아 경로를 객체로 반환
 
-    # global stX
-    # global stY
-    # global eX
-    # global eY
-    # global wkDay
-    # global departTm
-    # global long
-    # global si
-    # global bun
-
-    stX = float(rq.form.get("startX"))
-    stY = float(rq.form.get("startY"))
-    eX = float(rq.form.get("endX"))
-    eY = float(rq.form.get("endY"))
-    wkDay = rq.form.get("datesl")
-    departTm = rq.form.get("timesl")
-
-
-    print(stX, stY, eX, eY, wkDay, departTm)
-
-    long = ((stX - eX) ** 2 + (stY - eY) ** 2) ** 0.5
-    si = int(departTm[0:2])
-    bun = int(departTm[3:])
-
-
-    full = fullroute(stX, stY, eX, eY)
-    print(len(full))
-    if len(full[0]) > 7:
-        full[0] = full[0][:7]
-
-    print("1111111")
-
-    retry = 5
-    while retry > 0:
-        try:
-            pathList = eachroute(full, si, bun) # subPath + 메타데이터를 dict으로 담고있는 경로들의 list
-            break
-        except:
-            retry -= 1
-
-    print("222222")
-    # 각 경로마다의 subPath를 객체로 저장 -> Pedestrian() , Subway(), Bus()
-    # 웹 구현 시 각 subPath의 객체타입에 따라 보여지는 형식이 다름
+    global stX
+    global stY
+    global eX
+    global eY
+    global wkDay
+    global departTm
+    global long
+    global si
+    global bun
     global g_pathList
-    g_pathList = pathList
+
+    global taxi_wait
+
+    if rq.method =='POST':
+        stX = float(rq.form.get("startX"))
+        stY = float(rq.form.get("startY"))
+        eX = float(rq.form.get("endX"))
+        eY = float(rq.form.get("endY"))
+        wkDay = rq.form.get("datesl")
+        departTm = rq.form.get("timesl")
+        print("POST", stX, stY, eX, eY, wkDay, departTm)
+
+    if rq.method == 'GET':
+        print("GET", stX, stY, eX, eY, wkDay, departTm)
+
+        long = ((stX - eX) ** 2 + (stY - eY) ** 2) ** 0.5
+        si = int(departTm[0:2])
+        bun = int(departTm[3:])
 
 
-    taxi_wait = 20
-    # taxi_wait = Oracle(si, long)
+        full = fullroute(stX, stY, eX, eY)
+        print(len(full))
+        if len(full[0]) > 7:
+            full[0] = full[0][:7]
 
-    print("OK")
-    return redirect(url_for('getfull', pathList=pathList, taxi_wait=taxi_wait))  # 모든 경로를 대중교통 타입에 따라 구분하여 화면에 보여주는 html
+
+        retry = 5
+        while retry > 0:
+            try:
+                pathList = eachroute(full, si, bun) # subPath + 메타데이터를 dict으로 담고있는 경로들의 list
+                break
+            except:
+                retry -= 1
+
+        # 각 경로마다의 subPath를 객체로 저장 -> Pedestrian() , Subway(), Bus()
+        # 웹 구현 시 각 subPath의 객체타입에 따라 보여지는 형식이 다름
+
+        try:
+            g_pathList = pathList
+
+
+            taxi_wait = 20
+            # taxi_wait = Oracle(si, long)
+            print("OK")
+            return redirect(url_for('getfull'))  # 모든 경로를 대중교통 타입에 따라 구분하여 화면에 보여주는 html
+
+        except:
+            taxi_wait = 20
+            # taxi_wait = Oracle(si, long)
+            return redirect(url_for('get'))
+
+
 
 
 @app.route('/getfull')
-def getfull(pathList, taxi_wait):
-    return render_template("fullpath.html", pathList=pathList, taxi_wait = taxi_wait)
+def getfull():
+    return render_template("fullpath.html", pathList=g_pathList, taxi_wait = taxi_wait)
+
 
 
 @app.route('/subpath<onepath>', methods=["GET"])
@@ -658,6 +669,10 @@ def gettemp():
     stY = 37.56599776469799
     eX = 126.99458258473369
     eY = 37.56143935848331
+    # stX = 126.98633091799877
+    # stY = 37.56111050727452
+    # eX = 127.02885525431152
+    # eY = 37.52681131579078
     wkDay = "8월27일"
     departTm = "08:00"
 

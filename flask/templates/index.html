@@ -169,7 +169,7 @@
 		                                        </select>
 		                                    </div>
 		                                  </li>
-						<input type="button" value="확인" onclick="onSubmit(126.9027279 , 37.5349277)">
+						<input type="button" value="확인" onclick="onSubmit(sx, sy)">
 		                              </ul>   
 		                         </form>
 </div>
@@ -235,23 +235,31 @@
         }
     });
 
-    var sel = document.getElementById("start_g");
-    var startG = sel.options[sel.selectedIndex].value;
-    sel = document.getElementById("start_d");
-    var startD = sel.options[sel.selectedIndex].value;
-    sel = document.getElementById("end_g");
-    var endG = sel.options[sel.selectedIndex].value;
-    sel = document.getElementById("end_d");
-    var endD = sel.options[sel.selectedIndex].value;
+    var data_xy = JSON.parse('{{ XY|safe }}');
 
+    var startG;
+    var startD;
+    var endG;
+    var endD;
 
-    {#var sx = XY.startG.startD[0];#}
-    {#var sy = XY[startG][startD][1];#}
-    {#var ex = XY[endG][endD][0];#}
-    {#var ex = XY[endG][endD][0];#}
+    var sx;
+    var sy;
+    var ex;
+    var ey;
 
+    start_d.change(function(ev){
+       startG = start_g.val();
+       startD = start_d.val();
+       sx = data_xy[startG][startD][0];
+       sy = data_xy[startG][startD][1];
+    });
 
-
+    end_d.change(function(ev){
+       endG = end_g.val();
+       endD = end_d.val();
+       ex = data_xy[endG][endD][0];
+       ey = data_xy[endG][endD][1];
+    });
 
 </script>
 		                         </form>
@@ -327,26 +335,21 @@
                     {% endfor %}
 		 </select>
 	</div>
-	<input type="submit" id="rsubmit" value="길찾기" onsubmit="rsubmit()">
+	<input type="button" id="rsubmit" value="길찾기" onclick = "window.location.href='/fullpath'">
 </form>
 <script>
-    function rsubmit() {
+    $("#rsubmit").click(function() {
         var sel = document.getElementById("dateselect");
         var datesl = sel.options[sel.selectedIndex].value;
         var sel = document.getElementById("timeselect");
         var timesl = sel.options[sel.selectedIndex].value;
         var XY = [startX, startY, endX, endY , datesl, timesl];
-        $('#rsubmit').ready(function () {
-            $.ajax({
-                type: "POST",
-                contentType: "application/json;charset=utf-8",
-                url: "/fullpath",
-                traditional: "true",
-                data: JSON.stringify({XY}),
-                dataType: "json"
-            });
+        $.ajax({
+            type: "POST",
+            url: "/fullpath",
+            data: {startX, startY, endX, endY , datesl, timesl}
         });
-    };
+    });
 </script>
 </div>
 

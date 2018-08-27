@@ -54,7 +54,7 @@
 				<div class="row">
 					<div class="col-md-12">
 						<ul class="wm-breadcrumb">
-							<li><a href="#">경로 검색</a></li>
+							<li><a href="{{ url_for('index') }}">경로 검색</a></li>
 							<li>전체 경로 조회</li>
 						</ul>
 					</div>
@@ -76,7 +76,7 @@
 							<div class="col-md-12">
 								<div class="wm-fancy-title2">
 									<h2>전체 경로 조회</h2>
-									<p>다른 곳으로 가고 싶으신가요? <a href="contact-us.html">경로 검색</a></p>
+									<p>다른 곳으로 가고 싶으신가요? <a href="index.html">경로 검색</a></p>
 								</div>
 							</div>
 							<!--// Fancy Title \\-->
@@ -97,7 +97,7 @@
 <div class="wm-priceplans-style-two">
 	<ul class="row">
         {% for path in pathList %}
-            {% if path['score'] > 25 %}
+            {% if path['score'] > 3 %}
                 <li >
                     <div class="wm-priceplans-wrap">
 
@@ -105,16 +105,16 @@
                             <!--<div class="wm-storage"><span>이동편의지수</span></div>-->
                             <div class="clearfix"></div>
                             <div class="wm-price-sec">
-                                {% if path['score']>25 %}편함
-                                {% elif path['score']>15 %}보통
+                                {% if path['score']>3 %}편함
+                                {% elif path['score']>2 %}보통
                                 {% else %}불편{% endif %}
                                 <span><br/>{{ path['score'] }}</span></div>
                         </div>
-
+{% set count = loop.index-1 %}
                             <h3>{{path['desc']}}</h3>
                             <h5>총 소요시간 {{ path['totaltime'] }}분, 총 환승횟수 {{ path['trans'] }}회, 총 도보시간 {{path['totalwalk']}}분<h5>
 
-                        <div class=".wm-priceplane-btn"><a href="{{ url_for('subpath', onepath = path) }}" class="wm-btn-style1 wm-bgcolor">상세보기</a></div>
+                        <div class=".wm-priceplane-btn"><a href="{{ url_for('subpath', onepath = count) }}" class="wm-btn-style1 wm-bgcolor">상세보기</a></div>
 
                     </div>
                 </li>
@@ -138,16 +138,16 @@
                             <!--<div class="wm-storage"><span>이동편의지수</span></div>-->
                             <div class="clearfix"></div>
                             <div class="wm-price-sec">
-                                {% if path['score']>25 %}편함
-                                {% elif path['score']>15 %}보통
+                                {% if path['score']>3 %}편함
+                                {% elif path['score']>2 %}보통
                                 {% else %}불편{% endif %}
                                 <span><br/>{{ path['score'] }}</span></div>
                         </div>
-
+{% set count = loop.index-1 %}
                             <h3>{{path['desc']}}</h3>
                             <h5>총 소요시간 {{ path['totaltime'] }}분, 총 환승횟수 {{ path['trans'] }}회, 총 도보시간 {{path['totalwalk']}}분<h5>
 
-                        <div class=".wm-priceplane-btn"><a href="{{ url_for('subpath', onepath = path) }}" class="wm-btn-style1 wm-bgcolor">상세보기</a></div>
+                        <div class=".wm-priceplane-btn"><a href="{{ url_for('subpath', onepath = count) }}" class="wm-btn-style1 wm-bgcolor">상세보기</a></div>
 
                     </div>
                 </li>
@@ -172,16 +172,16 @@
                             <!--<div class="wm-storage"><span>이동편의지수</span></div>-->
                             <div class="clearfix"></div>
                             <div class="wm-price-sec">
-                                {% if path['score']>25 %}편함
-                                {% elif path['score']>15 %}보통
+                                {% if path['score']>3 %}편함
+                                {% elif path['score']>2 %}보통
                                 {% else %}불편{% endif %}
                                 <span><br/>{{ path['score'] }}</span></div>
                         </div>
-
+{% set count = loop.index-1 %}
                             <h3>{{path['desc']}}</h3>
                             <h5>총 소요시간 {{ path['totaltime'] }}분, 총 환승횟수 {{ path['trans'] }}회, 총 도보시간 {{path['totalwalk']}}분<h5>
 
-                        <div class=".wm-priceplane-btn"><a href="{{ url_for('subpath', onepath = path) }}" class="wm-btn-style1 wm-bgcolor">상세보기</a></div>
+                        <div class=".wm-priceplane-btn"><a href="{{ url_for('subpath', onepath = count) }}" class="wm-btn-style1 wm-bgcolor">상세보기</a></div>
 
                     </div>
                 </li>
@@ -207,16 +207,17 @@
                             <!--<div class="wm-storage"><span>이동편의지수</span></div>-->
                             <div class="clearfix"></div>
                             <div class="wm-price-sec">
-                                {% if path['score']>25 %}편함
-                                {% elif path['score']>15 %}보통
+                                {% if path['score']>3 %}편함
+                                {% elif path['score']>2 %}보통
                                 {% else %}불편{% endif %}
                                 <span><br/>{{ path['score'] }}</span></div>
                         </div>
-
-                            <h3>{{ loop.index }}{{path['desc']}}</h3>
+{% set count = loop.index-1 %}
+                            <h3>{{path['desc']}}</h3>
                             <h5>총 소요시간 {{ path['totaltime'] }}분, 총 환승횟수 {{ path['trans'] }}회, 총 도보시간 {{path['totalwalk']}}분<h5>
 
-                        <div class=".wm-priceplane-btn"><a href="{{ url_for('subpath', onepath = loop.index) }}" class="wm-btn-style1 wm-bgcolor">상세보기</a></div>
+
+                        <div class=".wm-priceplane-btn"><a href="{{ url_for('subpath', onepath = count) }}" class="wm-btn-style1 wm-bgcolor">상세보기</a></div>
 
                     </div>
                 </li>
@@ -236,15 +237,15 @@
 	<ul class="row">
             <li >
                 <div class="wm-priceplans-wrap">
+{##}
+{#                    <div class="wm-price-storage">#}
+{#                        <!--<div class="wm-storage"><span>이동편의지수</span></div>-->#}
+{#                        <div class="clearfix"></div>#}
+{#                        <div class="wm-price-sec">편함<span><br/>10</span></div>#}
+{#                    </div>#}
 
-                    <div class="wm-price-storage">
-                        <!--<div class="wm-storage"><span>이동편의지수</span></div>-->
-                        <div class="clearfix"></div>
-                        <div class="wm-price-sec">편함<span><br/>10</span></div>
-                    </div>
-
-                        <h3>예상대기시간 &nbsp | </h3>
-                        <h5>20분<h5>
+                        <h3>예상대기시간 &nbsp | {{ taxi_wait }}분</h3>
+                        <h5>&nbsp</h5>
 
 
                 </div>

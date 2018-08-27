@@ -44,9 +44,9 @@
                 return xmlDoc;
             }
 
-			function initTmap(stX, stY, eX, eY, rs){
+			function initTmap(stX, stY, eX, eY, rs, idx){
 				var map = new Tmap.Map({
-					div:'map_div',
+					div:'map_div'+idx+"",
 					width : "600px",
 					height : "400px",
 				});
@@ -95,7 +95,7 @@
                 var tDistance = "총 거리 : "+($intRate[0].getElementsByTagName("tmap:totalDistance")[0].childNodes[0].nodeValue/1000).toFixed(1)+"km,";
                 var tTime = " 총 시간 : "+($intRate[0].getElementsByTagName("tmap:totalTime")[0].childNodes[0].nodeValue/60).toFixed(0)+"분";
 
-                $("#result").text(tDistance+tTime);
+                $("#result"+idx+"").text(tDistance+tTime);
 
                 $intRate = $xml.find("Placemark");
                    var style_red = {
@@ -152,7 +152,7 @@
                 map.zoomToExtent(routeLayer.getDataExtent());
 
                 //document.write(route_text);
-                $("#route").html(route_text);
+                $("#route"+idx+"").html(route_text);
 
 }
 
@@ -177,7 +177,7 @@
 					<!--// Main Header \\-->
 					<div class="wm-mainheader">
 						<div class="row">
-							<div class="col-md-3"><a href="index.html" class="wm-logo"><img src="{{url_for('static', filename='images/logo-2.png')}}" alt=""></a></div>
+							<div class="col-md-3"><a href="/" class="wm-logo"><img src="{{url_for('static', filename='images/logo-2.png')}}" alt=""></a></div>
 							
 						</div>
 					</div>
@@ -194,8 +194,8 @@
 				<div class="row">
 					<div class="col-md-12">
 						<ul class="wm-breadcrumb">
-							<li><a href="#">경로 검색</a></li>
-							<li><a href="#">전체 경로 조회</a></li>
+							<li><a href="{{ url_for('index') }}">경로 검색</a></li>
+							<li><a href="javascript:history.back()">전체 경로 조회</a></li>
 							<li>세부 경로 조회</li>
 						</ul>
 					</div>
@@ -217,64 +217,60 @@
 							<div class="col-md-12">
 								<div class="wm-fancy-title2">
 									<h2>세부 경로 조회</h2>
-									<p>원하는 경로가 아니신가요? <a href="contact-us.html">전체 경로 보기</a></p>
+									<p>원하는 경로가 아니신가요? <a href="javascript:history.back()">전체 경로 보기</a></p>
 								</div>
 							</div>
 							<!--// Fancy Title \\-->
 
 							<div class="col-md-12">
 								<div id="faq" class="wm-faq-element">
-									<div class="panel panel-default">
-										<div class="panel-heading">
-											<a aria-controls="collapseOne" aria-expanded="true" href="#collapseOne" data-parent="#faq" data-toggle="collapse" role="button"> 도보 이동 - 총 8분 </a>
-										</div>
-										<div id="collapseOne" class="panel-collapse collapse in" role="tabpanel">
-											<div class="panel-body">
-												<p>An escrow officer is the person that walks you through the closing process.  They are usually employed by the title 
-													company that you are working with. They are a neutral third-party, responsible for overseeing the escrow process...
-												</p>
-											</div>
-										</div>
-									</div>
 
                                     {% for subpath in path %}
 <div class="panel panel-default">
 	<div class="panel-heading">
 
-		<a class="collapsed" aria-controls="collapsetwo" aria-expanded="true" href="#collapsetwo" data-parent="#faq" data-toggle="collapse" role="button">
-{{ subpath }}
-{% if subpath.type == Subway %}
-            지하철 - {{subpath.on}}역에서 {{subpath.code}}호선 승차
-{% elif subpath.type == Bus %}
-            버스 - {{subpath.on}} 정류장에서 {{subpath.code}}번 승차
-{% elif subpath.type is mapping %}
-            {{subpath.station}}역에서 {{subpath.fromlane}}호선에서 {{subpath.tolane}}호선으로 환승
-{% elif subpath.type==Pedestrian %}
+		<a class="collapsed" aria-controls="collapse{{ loop.index }}" aria-expanded="true" href="#collapse{{ loop.index }}" data-parent="#faq" data-toggle="collapse" role="button">
+
+
+            {% if 'Subway' in subpath.__class__.__name__ %}
+            {{ subpath.swtime }} | 지하철 - {{subpath.start}}역에서 {{subpath.code}}호선 승차
+               {% elif 'Bus' in subpath.__class__.__name__  %}
+            {{ subpath.bustime }} | 버스 - {{subpath.start}} 정류장에서 {{subpath.code}}번 승차
+             {% elif 'Pedestrian' in subpath.__class__.__name__  %}
             도보 - 약 {{subpath.totaltime}}분, {{subpath.totaldistance}}m 이동
+{% else %}
+            {{subpath['station']}}역에서 {{subpath['fromlane']}}호선에서 {{subpath['tolane']}}호선으로 환승
+
 {% endif %}
         </a>
 		</div>
-		<div id="collapsetwo" class="panel-collapse collapse" role="tabpanel">
+		<div id="collapse{{ loop.index }}" class="panel-collapse collapse" role="tabpanel">
 		<div class="panel-body">
 
-{% if subpath.type == Subway or subpath.type == Bus %}
-		<p>{{subpath.desc}}
-		</p>
-{% elif subpath.type==Pedestrian %}
-           <p id="route"></p>
-            <br/>
-            <p id="result"></p>
-            <div id="map_div">
-            </div>
-            <script type="text/javascript">
-                initTmap({{ subpath.pos[0]}}, {{subpath.pos[1]}}, {{ subpath.pos[2]}},{{ subpath.pos[3]}}, '{{subpath.result|safe }}' );
-            </script>
+            {% if 'Subway' in subpath.__class__.__name__  %}
+                {% for walk in subpath.output_path %}
+                    <p>{{ loop.index }}) &nbsp{{ walk }}</p>
+                {% endfor %}
+                    <p>{{ subpath.walkdesc }}</p>
+                    <p>{{subpath.desc}} </p>
+            {% elif 'Bus' in subpath.__class__.__name__ %}
+                    <p>{{subpath.desc}}
+                    </p>
+            {% elif 'Pedestrian' in subpath.__class__.__name__ %}
+                       <p id="route{{ loop.index }}" class="pmaps"></p>
+                        <br/>
+                        <div id="map_div{{ loop.index }}" class = "divmaps" >
+                        </div>
+                        <script type="text/javascript">
+                            initTmap({{ subpath.pos[0]}}, {{subpath.pos[1]}}, {{ subpath.pos[2]}},{{ subpath.pos[3]}}, '{{subpath.result|safe }}' , {{ loop.index }});
+                        </script>
+                        <p id="noneborder"><br/></p>
 
-{%endif%}
+
+            {%endif%}
 		</div>
 	</div>
 </div>
-                                        {% endif %}
                                 {% endfor %}
 
 								</div>

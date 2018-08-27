@@ -362,7 +362,7 @@ address {
     color: #21af95;
 }
 .wm-withbg .wm-logo {
-    margin-bottom: 30px;
+    margin-bottom: 20px;
 }
 .wm-logo {
     float: left;
@@ -455,6 +455,16 @@ address {
     width: 100%;
 }
 .wm-search input[type="submit"] {
+    background: rgba(0, 0, 0, 0) none repeat scroll 0 0;
+    border: medium none;
+    height: 30px;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 44px;
+    z-index: 2;
+}
+.wm-search input[type="button"] {
     background: rgba(0, 0, 0, 0) none repeat scroll 0 0;
     border: medium none;
     height: 30px;
@@ -4292,4 +4302,16 @@ input[type=checkbox] {
     width:45%;
     float: left;
     border: 1px;
+}
+
+p#noneborder{
+    border: none;
+}
+
+.divmaps{
+    display: block;
+}
+
+.pmaps{
+    left: 650px;
 }
