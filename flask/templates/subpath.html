@@ -1,0 +1,310 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>세부 경로 조회</title>
+
+    <!-- Css Files -->
+    <link href="{{url_for('static', filename='css/bootstrap.css')}}" rel="stylesheet">
+    <link href="{{url_for('static', filename='css/font-awesome.css')}}" rel="stylesheet">
+    <link href="{{url_for('static', filename='css/flaticon.css')}}" rel="stylesheet">
+    <link href="{{url_for('static', filename='style.css')}}" rel="stylesheet">
+    <link href="{{url_for('static', filename='css/color.css')}}" rel="stylesheet">
+    <link href="{{url_for('static', filename='css/slick-slider.css')}}" rel="stylesheet">
+    <link href="{{url_for('static', filename='css/prettyphoto.css')}}" rel="stylesheet">
+    <link href="{{url_for('static', filename='css/responsive.css')}}" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+      	<script src="https://code.jquery.com/jquery-1.12.4.min.js" ></script >
+        <script src="https://api2.sktelecom.com/tmap/js?version=1&format=javascript&appKey=1f55bf21-31eb-4ec4-a738-2011ccbb34f0"></script>
+
+        <script type="text/javascript">
+            function StringToXMLDom(string){
+                var xmlDoc=null;
+                if (window.DOMParser)
+                {
+                    parser=new DOMParser();
+                    xmlDoc=parser.parseFromString(string,"text/xml");
+                }
+                else // Internet Explorer
+                {
+                    xmlDoc=new ActiveXObject("Microsoft.XMLDOM");
+                    xmlDoc.async="false";
+                    xmlDoc.loadXML(string);
+                }
+                return xmlDoc;
+            }
+
+			function initTmap(stX, stY, eX, eY, rs){
+				var map = new Tmap.Map({
+					div:'map_div',
+					width : "600px",
+					height : "400px",
+				});
+				map.setCenter(new Tmap.LonLat(String((stX+eX)/2), String((stY+eY)/2)).transform("EPSG:4326", "EPSG:3857"), 15);
+				var routeLayer = new Tmap.Layer.Vector("route");
+				map.addLayer(routeLayer);
+
+
+
+                // 2. 시작, 도착 심볼찍기
+                // 시작
+                var markerStartLayer = new Tmap.Layer.Markers("start");
+                map.addLayer(markerStartLayer);
+
+                var size = new Tmap.Size(24, 38);
+                var offset = new Tmap.Pixel(-(size.w / 2), -size.h);
+                var icon = new Tmap.IconHtml("<img src='http://tmapapis.sktelecom.com/upload/tmap/marker/pin_r_m_s.png' />", size, offset);
+                var marker_s = new Tmap.Marker(new Tmap.LonLat(String(stX), String(stY)).transform("EPSG:4326", "EPSG:3857"), icon);
+                markerStartLayer.addMarker(marker_s);
+
+                // 도착
+                var markerEndLayer = new Tmap.Layer.Markers("end");
+                map.addLayer(markerEndLayer);
+
+                var size = new Tmap.Size(24, 38);
+                var offset = new Tmap.Pixel(-(size.w / 2), -size.h);
+                var icon = new Tmap.IconHtml("<img src='http://tmapapis.sktelecom.com/upload/tmap/marker/pin_r_m_e.png' />", size, offset);
+                var marker_e = new Tmap.Marker(new Tmap.LonLat(String(eX), String(eY)).transform("EPSG:4326", "EPSG:3857"), icon);
+                markerEndLayer.addMarker(marker_e);
+
+
+
+                // 5. 경로 탐색  결과 Line 그리기
+                //경로 탐색  결과 POINT 찍기
+                /* -------------- Geometry.Point -------------- */
+                var pointLayer = new Tmap.Layer.Vector("point");
+                {#var prtclString = new XMLSerializer().serializeToString(prtcl);//xml to String#}
+                var xmlString = rs;
+                 var prtcl = StringToXMLDom(xmlString);
+
+                 //var prtclString=xmlString.replace(/(&lt;)/g,"<").replace(/(&gt;)/g,">").replace(/(&quot;)/g, '"');
+                   xmlDoc = $.parseXML( xmlString),
+                   $xml = $( xmlDoc ),
+                   $intRate = $xml.find("Document");
+
+                var tDistance = "총 거리 : "+($intRate[0].getElementsByTagName("tmap:totalDistance")[0].childNodes[0].nodeValue/1000).toFixed(1)+"km,";
+                var tTime = " 총 시간 : "+($intRate[0].getElementsByTagName("tmap:totalTime")[0].childNodes[0].nodeValue/60).toFixed(0)+"분";
+
+                $("#result").text(tDistance+tTime);
+
+                $intRate = $xml.find("Placemark");
+                   var style_red = {
+                           fillColor:"#FF0000",
+                           fillOpacity:0.2,
+                           strokeColor: "#FF0000",
+                           strokeWidth: 3,
+                           strokeDashstyle: "solid",
+                           pointRadius: 2,
+                           title: "this is a red line"
+                      };
+
+                    var route_text = ""
+                   $intRate.each(function(index, element) {
+                    var nodeType = element.getElementsByTagName("tmap:nodeType")[0].childNodes[0].nodeValue;
+
+                    if(nodeType == "POINT"){
+                        var pointIndex =  (element.getElementsByTagName("tmap:pointIndex")[0].childNodes[0].nodeValue*1)+1;
+                        var desc =  element.getElementsByTagName("description")[0].childNodes[0].nodeValue;
+                        //document.write(pointIndex,desc)
+                        route_text = route_text + pointIndex + ") " + desc +'<br/>';
+
+                       // var facilityType =  element.getElementsByTagName("tmap:facilityType")[0].childNodes[0].nodeValue;
+                       // if(facilityType == 17){
+                       //     stair = true
+                       // }
+
+                        var point = element.getElementsByTagName("coordinates")[0].childNodes[0].nodeValue.split(',');
+                        var geoPoint =new Tmap.Geometry.Point(point[0],point[1]);
+                        var pointFeature = new Tmap.Feature.Vector(geoPoint, null, style_red);
+                        pointLayer.addFeatures([pointFeature]);
+                    }
+                   });
+
+
+                map.addLayer(pointLayer);
+                /* -------------- Geometry.Point -------------- */
+                //경로 탐색  결과 Line 그리기
+                routeLayer.style ={
+                        fillColor:"#FF0000",
+                        fillOpacity:0.2,
+                        strokeColor: "#FF0000",
+                        strokeWidth: 3,
+                        strokeDashstyle: "solid",
+                        pointRadius: 2,
+                        title: "this is a red line"
+                }
+                var kmlForm = new Tmap.Format.KML().read(prtcl);
+                routeLayer.addFeatures(kmlForm);
+
+
+
+                // 6. 경로탐색 결과 반경만큼 지도 레벨 조정
+                map.zoomToExtent(routeLayer.getDataExtent());
+
+                //document.write(route_text);
+                $("#route").html(route_text);
+
+}
+
+
+		</script>
+
+
+  </head>
+  <body>
+	
+    <!--// Main Wrapper \\-->
+    <div class="wm-main-wrapper">
+        
+        <!--// Header \\-->
+		<header id="wm-header" class="wm-header-one wm-withbg">
+			<span class="wm-transparent-layer"></span>
+			<div class="container">
+				<div class="row">
+					
+					
+
+					<!--// Main Header \\-->
+					<div class="wm-mainheader">
+						<div class="row">
+							<div class="col-md-3"><a href="index.html" class="wm-logo"><img src="{{url_for('static', filename='images/logo-2.png')}}" alt=""></a></div>
+							
+						</div>
+					</div>
+					<!--// Main Header \\-->
+
+				</div>
+			</div>
+		</header>
+		<!--// Header \\-->
+
+		<!--// Sub Header \\-->
+		<div class="wm-mini-header">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12">
+						<ul class="wm-breadcrumb">
+							<li><a href="#">경로 검색</a></li>
+							<li><a href="#">전체 경로 조회</a></li>
+							<li>세부 경로 조회</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!--// Sub Header \\-->
+
+		<!--// Main Content \\-->
+		<div class="wm-main-content">
+
+			<!--// Main Section \\-->
+			<div class="wm-main-section">
+				<div class="container">
+					<div class="row">
+						<div class="row">
+
+							<!--// Fancy Title \\-->
+							<div class="col-md-12">
+								<div class="wm-fancy-title2">
+									<h2>세부 경로 조회</h2>
+									<p>원하는 경로가 아니신가요? <a href="contact-us.html">전체 경로 보기</a></p>
+								</div>
+							</div>
+							<!--// Fancy Title \\-->
+
+							<div class="col-md-12">
+								<div id="faq" class="wm-faq-element">
+									<div class="panel panel-default">
+										<div class="panel-heading">
+											<a aria-controls="collapseOne" aria-expanded="true" href="#collapseOne" data-parent="#faq" data-toggle="collapse" role="button"> 도보 이동 - 총 8분 </a>
+										</div>
+										<div id="collapseOne" class="panel-collapse collapse in" role="tabpanel">
+											<div class="panel-body">
+												<p>An escrow officer is the person that walks you through the closing process.  They are usually employed by the title 
+													company that you are working with. They are a neutral third-party, responsible for overseeing the escrow process...
+												</p>
+											</div>
+										</div>
+									</div>
+
+                                    {% for subpath in path %}
+<div class="panel panel-default">
+	<div class="panel-heading">
+
+		<a class="collapsed" aria-controls="collapsetwo" aria-expanded="true" href="#collapsetwo" data-parent="#faq" data-toggle="collapse" role="button">
+{{ subpath }}
+{% if subpath.type == Subway %}
+            지하철 - {{subpath.on}}역에서 {{subpath.code}}호선 승차
+{% elif subpath.type == Bus %}
+            버스 - {{subpath.on}} 정류장에서 {{subpath.code}}번 승차
+{% elif subpath.type is mapping %}
+            {{subpath.station}}역에서 {{subpath.fromlane}}호선에서 {{subpath.tolane}}호선으로 환승
+{% elif subpath.type==Pedestrian %}
+            도보 - 약 {{subpath.totaltime}}분, {{subpath.totaldistance}}m 이동
+{% endif %}
+        </a>
+		</div>
+		<div id="collapsetwo" class="panel-collapse collapse" role="tabpanel">
+		<div class="panel-body">
+
+{% if subpath.type == Subway or subpath.type == Bus %}
+		<p>{{subpath.desc}}
+		</p>
+{% elif subpath.type==Pedestrian %}
+           <p id="route"></p>
+            <br/>
+            <p id="result"></p>
+            <div id="map_div">
+            </div>
+            <script type="text/javascript">
+                initTmap({{ subpath.pos[0]}}, {{subpath.pos[1]}}, {{ subpath.pos[2]}},{{ subpath.pos[3]}}, '{{subpath.result|safe }}' );
+            </script>
+
+{%endif%}
+		</div>
+	</div>
+</div>
+                                        {% endif %}
+                                {% endfor %}
+
+								</div>
+							</div>
+
+						</div>
+					</div>
+				</div>
+			</div>
+			<!--// Main Section \\-->
+
+		</div>
+		<!--// Main Content \\-->
+
+
+    </div>
+    <!--// Main Wrapper \\-->
+
+   
+
+	
+	<!-- jQuery (necessary for JavaScript plugins) -->
+	<script type="text/javascript" src="{{ url_for('static',filename='script/jquery.js')}}"></script>
+	<script src="{{ url_for('static',filename='script/data.json')}}"></script>
+	<script type="text/javascript" src="{{ url_for('static',filename='script/modernizr.js')}}"></script>
+    <script type="text/javascript" src="{{ url_for('static',filename='script/bootstrap.min.js')}}"></script>
+    <script type="text/javascript" src="{{ url_for('static',filename='script/jquery.prettyphoto.js')}}"></script>
+    <script type="text/javascript" src="{{ url_for('static',filename='script/jquery.countdown.min.js')}}"></script>
+    <script type="text/javascript" src="{{ url_for('static',filename='script/fitvideo.js')}}"></script>
+    <script type="text/javascript" src="{{ url_for('static',filename='script/slick.slider.min.js')}}"></script>
+    <script type="text/javascript" src="{{ url_for('static',filename='script/functions.js')}}"></script>
+  </body>
+</html>

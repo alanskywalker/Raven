@@ -1,0 +1,17 @@
+
+.wm-color, .wm-colorhover:hover, #wm-footer .wm-footer-social-network ul li:hover a, .wm-copyright-social-network ul li:hover, #wm-footer .wm-copyright-social-network ul li:hover a, .wm-section-heading h2,
+.wm-select-checkbox ul li input[type="checkbox"]:checked + label span:before,.wm-blogs-article ul li:hover a,.replay-button,.ec-radius-btn:hover,.modal-header h6 {
+    color: #22b099;
+}
+.wm-bgcolor, .wm-bgcolorhover:hover, .widget_blogpost ul li figure a::before, .wm-listing-search::before, .wm-category-slide-wrap a:hover, .wm-listing-slider .slick-arrow:hover,
+.wm-app-btn a:hover, .wm-testimonial-slider .slick-arrow:hover, .wm-banner .wm-listing-search ul li input[type="submit"], .wm-priceplans-style-two ul li:hover .wm-price-sec,
+.wm-partner-widget-slider .slick-arrow:hover, .wm-listing-detail-slider .slick-arrow:hover, .wm-floorplans ul li a:before,.widget_blogpost ul li figure a:before,.wm-move-bgcolor,
+.wm-step-two-wrap input[type="submit"],.wm-form-widget ul li input[type="submit"],.tabs-nav li:hover a, .tabs-nav li.active a {
+    background-color: #22b099;
+}
+.wm-bordercolor, .wm-bordercolorhover:hover,.ec-radius-btn {
+    border-color: #22b099;
+}
+.wm-category-slide-wrap a:before {
+    border-bottom-color: #22b099;
+}
