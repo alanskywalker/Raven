@@ -30,46 +30,46 @@ import sqlite3
 conn = sqlite3.connect('db/Chopin.db')
 cur = conn.cursor()
 cur.execute("SELECT time, long, Wait, cool, type24,Day FROM Mus")
-# rows = cur.fetchall()
-# haha1 = []
-# haha2 = []
-# haha3 = []
-# haha4 = []
-# for row in rows:
-#     haha1.append([row[0], row[1], row[2]])
-#     haha2.append(row[3])
-#
-#     temp = int(row[5] / 7)
-#     if temp > 1:
-#         temp = 1
-#     else:
-#         temp = 0
-#     haha3.append([row[4], temp])  # 시간대
-#     haha4.append(row[2])  # 대기인원
-#
-# y = np.array(haha2)
-# X = np.array(haha1)
-#
-# y1 = np.array(haha4)
-# X1 = np.array(haha3)
+rows = cur.fetchall()
+haha1 = []
+haha2 = []
+haha3 = []
+haha4 = []
+for row in rows:
+    haha1.append([row[0], row[1], row[2]])
+    haha2.append(row[3])
+
+    temp = int(row[5] / 7)
+    if temp > 1:
+        temp = 1
+    else:
+        temp = 0
+    haha3.append([row[4], temp])  # 시간대
+    haha4.append(row[2])  # 대기인원
+
+y = np.array(haha2)
+X = np.array(haha1)
+
+y1 = np.array(haha4)
+X1 = np.array(haha3)
 
 conn.close()
 
 
-# X_train, X_test, y_train, y_test = train_test_split(X,y, random_state=3)
-# gbrt = GradientBoostingRegressor(max_depth=10, learning_rate=0.2, n_estimators=200, random_state=0)
-# gbrt.fit(X_train, y_train)
-#
-# X_train, X_test, y_train, y_test = train_test_split(X1,y1, random_state=3)
-# gbrt2 = GradientBoostingRegressor(max_depth=10, learning_rate=0.2, n_estimators=200, random_state=0)
-# gbrt2.fit(X_train, y_train)
-#
-# def Oracle(a,b): # a는 현재 시간대, b long 거리, Wait 대기인원
-#     k1=[[a,1]]
-#     c=gbrt2.predict(k1)[0]
-#     k=[[a,b,c]]
-#     k=np.array(k)
-#     return gbrt.predict(k)[0]
+X_train, X_test, y_train, y_test = train_test_split(X,y, random_state=3)
+gbrt = GradientBoostingRegressor(max_depth=10, learning_rate=0.2, n_estimators=200, random_state=0)
+gbrt.fit(X_train, y_train)
+
+X_train, X_test, y_train, y_test = train_test_split(X1,y1, random_state=3)
+gbrt2 = GradientBoostingRegressor(max_depth=10, learning_rate=0.2, n_estimators=200, random_state=0)
+gbrt2.fit(X_train, y_train)
+
+def Oracle(a,b): # a는 현재 시간대, b long 거리, Wait 대기인원
+    k1=[[a,1]]
+    c=gbrt2.predict(k1)[0]
+    k=[[a,b,c]]
+    k=np.array(k)
+    return gbrt.predict(k)[0]
 
 
 
@@ -142,7 +142,7 @@ class Pedestrian:
         paramUrl = parse.urlencode(data)
         paramBytes = paramUrl.encode("utf-8")
 
-        self.req = request.Request(tmapURL, data=paramBytes, headers={'appKey': "1f55bf21-31eb-4ec4-a738-2011ccbb34f0",
+        self.req = request.Request(tmapURL, data=paramBytes, headers={'appKey': "b9e1fdd0-0495-4f88-8b28-3e1ae2e84b19",
                                                                       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36'})
         request.get_method = lambda: 'GET'
         res = request.urlopen(self.req)
@@ -569,6 +569,7 @@ g_pathList=[]
 
 
 taxi_wait = 0
+import random as rd
 
 @app.route('/fullpath', methods=['POST', 'GET'])
 def full():   #출발, 목적지 좌표를 입력받아 경로를 객체로 반환
@@ -624,15 +625,23 @@ def full():   #출발, 목적지 좌표를 입력받아 경로를 객체로 반�
             g_pathList = pathList
 
 
-            taxi_wait = 20
-            # taxi_wait = Oracle(si, long)
+            # taxi_wait = 20
+            taxi_wait = Oracle(si, long)
+
+            if taxi_wait > 150:
+                taxi_wait = rd.randint(10, 150)
+
             print("OK")
             return redirect(url_for('getfull'))  # 모든 경로를 대중교통 타입에 따라 구분하여 화면에 보여주는 html
 
         except:
-            taxi_wait = 20
-            # taxi_wait = Oracle(si, long)
-            return redirect(url_for('get'))
+            # taxi_wait = 20
+            taxi_wait = Oracle(si, long)
+
+            if taxi_wait > 150:
+                taxi_wait = rd.randint(10, 150)
+
+            return redirect(url_for('gettemp'))
 
 
 
@@ -665,10 +674,10 @@ def subpath(onepath):  # 하나의 경로를 구성하는 subpath들을 보여�
 
 @app.route('/get')
 def gettemp():
-    stX = 126.98236124865412
-    stY = 37.56599776469799
-    eX = 126.99458258473369
-    eY = 37.56143935848331
+    stX = 126.982361
+    stY = 37.565997
+    eX = 126.994582
+    eY = 37.561439
     # stX = 126.98633091799877
     # stY = 37.56111050727452
     # eX = 127.02885525431152
@@ -692,8 +701,11 @@ def gettemp():
     global g_pathList
     g_pathList = pathList
 
-    taxi_wait = 20
-    # taxi_wait = Oracle(si, long)
+    # taxi_wait = 20
+    taxi_wait = Oracle(si, long)
+
+    if taxi_wait > 150:
+        taxi_wait = rd.randint(10, 150)
 
     print("OK")
     return render_template("fullpath.html", pathList=pathList, taxi_wait = taxi_wait)
